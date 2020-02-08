@@ -1,0 +1,13 @@
+{
+	"author": "Ben Tancock",
+	"name": "censor",
+	"version": "0.1.1",
+	"description": "censors words out of text",
+	"main": "censortext",
+	"dependencies": {
+		"censorify": "file:censorify-0.1.1.tgz"
+	},
+	"engines": {
+		"node": "*"
+	}
+}
