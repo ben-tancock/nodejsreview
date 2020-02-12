@@ -67,7 +67,7 @@ r.on('end', function(data){
  */
 
 //var util = require('util');
-util.inherits(MyWritableStream, stream.Writable);
+util.inherits(Writer, stream.Writable);
 
 function Writer(opt){
 	stream.Writable.call(this, opt);
@@ -82,8 +82,142 @@ Writer.prototype._write = function(data, encoding, callback){
 
 var w = new Writer();
 for (var i=1; i <= 5; i++){
-	
+	w.write("Item" + i, 'utf8');
 }
+
+w.end("ItemLast");
+console.log(w.data);
+
+
+//DUPLEX STREAMS -----------------------------------
+/* A duplex stream combines readable and writable funcitonality
+	A good example is a TCP socket connection. You can read and write from the socket conneciton once it has been created.
+	To implement a duplex stream, like all the other streams, you must inherit its functionality.
+*/
+
+//var util = require('util');
+//util.inherits(MyDuplexStream, stream.Duplex);
+
+// then you create an instance of this object call:
+//stream.Duplex.call(this, opt);
+
+// the opt parameter when creating duplex streams accepts an object with the property 
+// allowHalfOpen set to ttrue or false. If this option is true, then the readable side 
+// stays open even after the writable side has ended and vice versa. If the option is set
+// to false, ending the writable side also ends the readable side and vice versa
+
+//when you implement a duplex stream, you need to implement both a _read(size) and a _write(data, encoding, callback)
+//method when prototyping your duplex class
+
+var stream = require('stream');
+var util = require('util');
+util.inherits(Duplexer, stream.Duplex);
+
+function Duplexer(opt){
+	stream.Duplex.call(this, opt);
+	this.data = [];
+}
+
+Duplexer.prototype._read = function readItem(size) {
+	var chunk = this.data.shift(); // get the first item in the array
+	if (chunk == "stop"){
+		this.push(null);
+	}
+	else{
+		if(chunk){
+			this.push(chunk);
+		}
+		else{
+			setTimeout(readItem.bind(this), 500, size);
+		}
+	}
+};
+
+
+
+Duplexer.prototype._write = function(data, encoding, callback){
+	this.data.push(data);
+	
+	// apparently you don't need a callback function anymore? uncommenting this line throws an error, which makes sense
+	// I think it was throwing an error because the function wasn't always being called with a callback function.
+	// So I made callback optional...
+	if(callback){
+		callback();
+	}
+};
+
+
+
+
+
+var d = new Duplexer();
+d.on('data', function(chunk){
+	console.log('read: ', chunk.toString());
+});
+
+d.on('end', function(){
+	console.log('Message Complete.');	
+});
+
+d._write("I think, ");
+d._write("therefore ");
+d._write("I am.");
+d._write("Rene Descartes");
+d._write("stop");
+
+
+// TRANSFORM STREAMS -----------------------------
+/*
+	A Transform stream extends the Duplex stream but modifies the data between the Writable stream and the Readable stream.
+	This can be useful when you need to modify data from one system to another. Some examples of transform streams can be:
+	- zlib streams
+	- crypto streams
+	
+	A major difference between duplex and transform streams is that you do not need to create _read and _write prototype methods. 
+	These are provided as pass-through functions. Instead, you implement the _transform(chunk, encoding, callback) and _flush(callback)
+	methods. The transform() method should accept the data from write() requests, modify it, and then push() out the modified data.
+	
+	The following transform stream accepts JSON strings, converts them to objects, and then emits a custom event named object that
+	sends the object to any listeners. The _transform() function also modifies the object to include a handled property and then sends 
+	a string form on.
+*/
+
+var stream = require('stream');
+var util = require('util');
+util.inherits(JSONObjectStream, stream.Transform);
+
+function JSONObjectStream (opt) {
+	stream.Transform.call(this, opt);
+};
+
+// just do this without the callback functions... we can figure this out later
+JSONObjectStream.prototype._transform = function (data, encoding){
+	object = data ? JSON.parse(data.toString()) : "";
+	this.emit("object", object);
+	object.handled = true;
+	this.push(JSON.stringify(object));
+};
+
+JSONObjectStream.prototype._flush = function(cb){
+	console.log("test flush");
+	cb();
+};
+
+var tc = new JSONObjectStream();
+tc.on("object", function(object){
+	console.log("Name: %s", object.name);
+	console.log("Color: %s", object.color);
+});
+
+tc.on("data", function(data){
+	console.log("Data: %s", data.toString());
+});
+
+tc._write('{"name":"Carolinus", "color":"Green"}');
+/*tc._write('{"name":"Solarius", "color":"Blue"}');
+tc._write('{"name":"Lo Tae Zhao", "color":"Gold"}');
+tc._write('{"name":"Ommadon", "color":"Red"}');*/
+
 
 
 
