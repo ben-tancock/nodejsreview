@@ -10,7 +10,6 @@
 // to implement your own custom readable stream object, you need to first inherit the functionality of Readable streams. The simplest way to do that is to use the util module's inherits() method
 var stream = require('stream');
 var util = require('util');
-
 util.inherits(MyReadableStream, stream.Readable);
 
 // then you create an instance of the object call:
@@ -148,8 +147,6 @@ Duplexer.prototype._write = function(data, encoding, callback){
 
 
 
-
-
 var d = new Duplexer();
 d.on('data', function(chunk){
 	console.log('read: ', chunk.toString());
@@ -191,19 +188,22 @@ function JSONObjectStream (opt) {
 };
 
 // just do this without the callback functions... we can figure this out later
-JSONObjectStream.prototype._transform = function (data, encoding){
+JSONObjectStream.prototype._transform = function (data, encoding, callback) {
 	object = data ? JSON.parse(data.toString()) : "";
 	this.emit("object", object);
 	object.handled = true;
 	this.push(JSON.stringify(object));
+	console.log("test transform");
+	callback();
+	
 };
 
 JSONObjectStream.prototype._flush = function(cb){
-	console.log("test flush");
 	cb();
 };
 
 var tc = new JSONObjectStream();
+
 tc.on("object", function(object){
 	console.log("Name: %s", object.name);
 	console.log("Color: %s", object.color);
@@ -213,15 +213,13 @@ tc.on("data", function(data){
 	console.log("Data: %s", data.toString());
 });
 
-tc._write('{"name":"Carolinus", "color":"Green"}');
-/*tc._write('{"name":"Solarius", "color":"Blue"}');
-tc._write('{"name":"Lo Tae Zhao", "color":"Gold"}');
-tc._write('{"name":"Ommadon", "color":"Red"}');*/
+tc.write('{"name":"Carolinus", "color":"Green"}');
+tc.write('{"name":"Solarius", "color":"Blue"}');
+tc.write('{"name":"Lo Tae Zhao", "color":"Gold"}');
+tc.write('{"name":"Ommadon", "color":"Red"}');
 
 
-
-
-
+// PIPING READABLE STREAMS TO WRITABLE STREAMS ----------------------------------------------------------------------
 
 
 
