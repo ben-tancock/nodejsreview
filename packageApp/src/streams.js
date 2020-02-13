@@ -220,6 +220,17 @@ tc.write('{"name":"Ommadon", "color":"Red"}');
 
 
 // PIPING READABLE STREAMS TO WRITABLE STREAMS ----------------------------------------------------------------------
+/*
+ * One of the coolest things we can do with stream objects is to chain Readable streams to Writable streams
+ * using the pipe(writableStream, [options]) function. This does exactly what the name implies. The output
+ * from the Readable stream is directly input into the Writable stream. 
+ * The options parameter accepts an object with the end property set to true or false. When end is true, the Writable stream
+ * ends when the Readable stream ends. This is the default behaviour.
+ * 
+ * You can also break the pipe programatically with unpipe(destinationStream) option.
+ */
+
+
 
 
 
