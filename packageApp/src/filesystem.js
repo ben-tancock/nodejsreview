@@ -238,7 +238,100 @@ fs.open('fruit.txt', 'r', function(err, fd){
 	readFruit(fd, "");
 });
 
+
+
 // STREAMING FILE READING -----------------------------------------
+
+// To stream a data file asynchronously, you first need to create a Readable stream object using the following syntax:
+//	fs.createReadStream(path, [options]);
+// the path parameter specifies the path to a file. can be relative or absolute. 
+// options parameter is an optional object that can contain encoding, mode and flag properties.
+
+// once you have opened the Readable file stream, you can easily read from it using the readable event with the read() requests 
+// or by implementing a data event handler, as shown below
+
+var options = {encoding: 'utf8', flag: 'r'};
+var fileReadStream = fs.createReadStream("grains.txt", options);
+fileReadStream.on('data', function(chunk){
+	console.log('Grains: %s', chunk);
+	console.log('Read %d bytes of data.', chunk.length);
+});
+
+fileReadStream.on("close", function(){
+	console.log("File Closed.");
+});
+
+
+
+// OTHER FILE SYSTEM TASKS -----------------------------------------------
+/*
+ * Before doing any kind of read/write operation on a file or directory, you might want to verify whether the path exists.
+ * fs.exists(path, callback)   - the callback is passed a boolean value of whether or not the file exists
+ * fs.existsSync(path)
+ */
+
+fs.exists('filesystem.js', function(exists){
+	console.log(exists ? "Path exists" : "Path does not exist");
+});
+
+
+// GETTING FILE INFO -----------------
+// fs.stats(path, callback)
+// fs.statsSync(path)
+
+
+
+// LISTING FILES -------------------------------------------------
+/*
+ * To access the files in the file system, use onf of the following commands to read a list of entries:
+ * fs.readdir(path, callback) - list is passed as the second parameter to the callback function and an error (if there is one) is passed as the first
+ * fs.readdirSync(path) - an array of strings representing the entry names in the path is returned
+ */
+
+var Path = require('path');
+function WalkDirs(dirPath){
+	console.log(dirPath);
+	fs.readdir(dirPath, function(err, entries){
+		for (var idx in entries){
+			var fullPath = Path.join(dirPath, entries[idx]);
+			(function(fullPath){
+				fs.stat(fullPath, function(err, stats){
+					if (stats.isFile()){
+						console.log(fullPath);
+						}
+					else if(stats.isDirectory()){
+						WalkDirs(fullPath);
+					}
+				});
+			}) (fullPath);
+		}
+	});
+}
+
+WalkDirs("../packageApp");
+
+
+// Deleting Files
+// fs.unlink(path, callback)
+// fs.unlinkSync(path)
+
+// Truncating Files (when you want to reduce the size of a file by setting the end to a smaller value than the current size)
+// len parameter = number of bytes you want the file to contain when completed
+// fs.truncate(path, len, callback)
+// fs.truncateSync(path, len)
+
+// MAKING AND REMOVING DIRECTORIES ---------------------------
+/* mode param = access mode for new directory
+ * fs.mkdir(path, [mode], callback)
+ * fs.mkdirSync(path, [mode])
+ * 
+ * to delete a directory, use
+ * fs.rmdir(path, callback)
+ * fs.rmdirSync(path)
+*/
+
+
+
 
 
 
