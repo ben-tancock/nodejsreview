@@ -74,6 +74,7 @@ var params = qstring.parse("name=Brad&color=red&color=blue");
  */
 
 
+// the code below won't run because it can't connect, but w/e
 var http = require('http');
 var options = {hostname: 'www.myserver.com', path: '/', port: '8080', method: 'POST'};
 
@@ -103,7 +104,39 @@ req.end();
 
 
 // The http.IncomingMessage OBJECT, http.Server object
-// ...
+/*
+ * Is created either by HTTP server or the HTTP client. On the server side, the client request is represented by an IncomingMessage Object
+ * and on the client side the server response is represented by an IncomingMessage object as well. The IncomingMessage object can be used for both because
+ * the functionality is basically the same.
+ * 
+ * The IncomingMessage implements a readable stream, allowing you to read the client request or server response as a streaming source.
+ * This means that the readable and data events can be listened to and used to read data from the stream.
+ */ 
+
+/*
+ * THE http.Server OBJECT:
+ * 
+ * the http server object provides the fundamental framework to implement http servers.
+ * It provides and underlying socket that listens on a port and handles receiving requests and then sends the responses out to client connections.
+ * While the server is listening, the Node.js application will not end.
+ * The Server object implements EventEmitter and emits the events listed in table 7.8 (see textbook)
+ * As you implement an HTTP server, you need to handle at least some of these events. 
+ * For example, at a minimum you need an event handler to handle the request event that is triggered when a client request is received.
+ * 
+ * To start the http server, you need to first create a server object using the createServer() method. This method returns the Server object.
+ * The optional requestListener parameter is a callback and is executed when the request event is triggered. the callback should accept two 
+ * parameters. The first is an IncomingMessage object representing the client request, and the second is a ServerResponse object you use to form and send the response:
+ * 
+ * http.createServer([requestListener]);
+ * 
+ * once you have created the Server object, you can begin listening on it by calling the listen() method on it:
+ * 
+ * listen(port, [hostname], [backlog], [callback])
+ * port: specifies the port to listen on
+ * hostname: specifies when the hostname will accept the connections, and if omitted, the server will accept connections directed to any ipv4 address 
+ * backlog: specifies the number of pending connections that are allowed to be queued
+ * callback: callback handler to execute once the server has begun listening on a specific port 
+ */
 
 
 
